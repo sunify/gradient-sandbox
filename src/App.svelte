@@ -1,73 +1,27 @@
 <script>
   import lerpColor from '@sunify/lerp-color';
-  import lerp from 'lerp';
   import eases from 'eases';
+  import { makeGradient } from './make-gradient';
 
   const coolorsLink = 'https://coolors.co/fb5012-01fdf6-cbbaed-e9df00-03fcba';
   function parseCoolors (link) {
     return link.replace('https://coolors.co/', '').split('-').map(c => `#${c}`)
   }
 
-  const weights = [0, 0.1, 0.2, 0.71, 1];
+  const weights = [0.15, 0.2, 0.3, 0.71, 0.9];
   const palette = parseCoolors(coolorsLink);
   const colorMap = weights.map((w, i) => [w, palette[i]]);
-
-  function between(min, max, n) {
-    return Math.max(min, Math.min(max, n));
-  }
-
-  function getWeightT(weights, t) {
-    let step = 0;
-    for (let i = 0; i < weights.length - 1; i += 1) {
-      const w1 = weights[i];
-      const w2 = weights[i + 1];
-      if (t >= w1 && t <= w2) {
-        step = i;
-        break;
-      }
-    }
-
-    const stepSize = 1 / (weights.length - 1);
-    const t1 = (step) * stepSize;
-    const t2 = (step + 1) * stepSize;
-
-    const w1 = weights[step];
-    const w2 = weights[step + 1];
-
-    return lerp(
-      t1,
-      t2,
-      between(
-        0,
-        1,
-        (t - w1) / (w2 - w1)
-      )
-    );
-  };
 
   function shuffle(arr) {
     return arr.sort(() => Math.sign(0.5 - Math.random()));
   }
 
-  function makeGradient(colorMap) {
-    const palette = [];
-    const weights = [];
-    for (let [w, c] of colorMap) {
-      palette.push(c);
-      weights.push(w);
-    }
-    const colors = lerpColor(
-      shuffle(palette)
-    );
-    return (t) => {
-      const wT = getWeightT(weights, t);
-      return colors(Math.min(1, wT));
-    };
-  }
-
   let stepsCount = 1100;
   let easing = 'linear';
-  $: gradient = makeGradient(colorMap);
+  $: gradient = makeGradient(
+    shuffle(palette),
+    weights
+  );
   let colors, colors2;
   let approxSteps = 10;
   $: {
@@ -92,7 +46,10 @@
   function handleKeyUp(e) {
     if (e.keyCode === 32) {
       e.preventDefault();
-      gradient = makeGradient(colorMap, eases[easing]);
+      gradient = makeGradient(
+        shuffle(palette),
+        weights
+      );
     }
   }
 
