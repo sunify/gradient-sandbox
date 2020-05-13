@@ -3,16 +3,20 @@
   import lerp from 'lerp';
   import eases from 'eases';
 
-  const coolorsLink = 'https://coolors.co/faa6ff-01fdf6-cbbaed-e9df00-03fcba';
-  const parseCoolors = (link) => {
+  const coolorsLink = 'https://coolors.co/fb5012-01fdf6-cbbaed-e9df00-03fcba';
+  function parseCoolors (link) {
     return link.replace('https://coolors.co/', '').split('-').map(c => `#${c}`)
   }
 
-  const weights = [0, 0.1, 0.6, 0.7, 1];
+  const weights = [0, 0.1, 0.2, 0.71, 1];
   const palette = parseCoolors(coolorsLink);
   const colorMap = weights.map((w, i) => [w, palette[i]]);
 
-  const getWeightT = (weights, t, easing) => {
+  function between(min, max, n) {
+    return Math.max(min, Math.min(max, n));
+  }
+
+  function getWeightT(weights, t) {
     let step = 0;
     for (let i = 0; i < weights.length - 1; i += 1) {
       const w1 = weights[i];
@@ -30,38 +34,58 @@
     const w1 = weights[step];
     const w2 = weights[step + 1];
 
-    return lerp(t1, t2, Math.max(0, Math.min(1, easing((t - w1) / (w2 - w1)))));
+    return lerp(
+      t1,
+      t2,
+      between(
+        0,
+        1,
+        (t - w1) / (w2 - w1)
+      )
+    );
   };
 
-  function makeGradient(colorMap, easing = t => t) {
-    const colors = lerpColor(colorMap.map(([, c]) => c).sort(() => Math.sign(0.5 - Math.random())));
-    const weights = colorMap.map(([w]) => w)
+  function shuffle(arr) {
+    return arr.sort(() => Math.sign(0.5 - Math.random()));
+  }
+
+  function makeGradient(colorMap) {
+    const palette = [];
+    const weights = [];
+    for (let [w, c] of colorMap) {
+      palette.push(c);
+      weights.push(w);
+    }
+    const colors = lerpColor(
+      shuffle(palette)
+    );
     return (t) => {
-      const wT = getWeightT(weights, t, easing);
+      const wT = getWeightT(weights, t);
       return colors(Math.min(1, wT));
     };
   }
 
   let stepsCount = 1100;
-  let easing = 'bounceInOut';
-  $: gradient = makeGradient(colorMap, eases[easing]);
+  let easing = 'linear';
+  $: gradient = makeGradient(colorMap);
   let colors, colors2;
   let approxSteps = 10;
   $: {
     colors = Array.from(
       { length: stepsCount + 1 },
-      (_, i) => gradient(i / (stepsCount))
+      (_, i) => gradient(eases[easing](i / (stepsCount)))
     );
   }
 
+  $: gradient2 = lerpColor(Array.from(
+    { length: approxSteps + 1 },
+    (_, i) => gradient(eases[easing](i / approxSteps))
+  ));
+
   $: {
-    const p2 = lerpColor(Array.from(
-      { length: approxSteps + 1 },
-      (_, i) => gradient(i / approxSteps)
-    ));
     colors2 = Array.from(
       { length: stepsCount + 1 },
-      (_, i) => p2(i / (stepsCount))
+      (_, i) => gradient2(i / (stepsCount))
     );
   }
 
@@ -186,4 +210,12 @@
     <option value={easing}>{easing}</option>
   {/each}
   </select>
+
+  <hr />
+  <input
+    style="width: 100%;"
+    type="text"
+    readonly
+    value={`['${Array.from({ length: approxSteps + 1 }, (_, i) => gradient2(i / approxSteps)).join("', '")}']`}
+    />
 </div>
