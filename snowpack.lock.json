@@ -1,0 +1,7 @@
+{
+  "imports": {
+    "@sunify/lerp-color": "https://cdn.pika.dev/pin/@sunify/lerp-color@v2.0.0-iuRQcFFf9zPuTV6G9o3L/lerp-color.js",
+    "eases": "https://cdn.pika.dev/pin/eases@v1.0.8-E7OGwtrXC9ehodpdek8m/eases.js",
+    "lerp": "https://cdn.pika.dev/pin/lerp@v1.0.3-Wzk7VD0WYMYhvXEF24sQ/lerp.js"
+  }
+}
