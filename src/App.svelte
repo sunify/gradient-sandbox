@@ -3,11 +3,16 @@
   import lerp from 'lerp';
   import eases from 'eases';
 
-  const weights = [0, 0.1, 0.3, 0.7, 1];
-  const palette = 'c200fb-ec0868-fc2f00-ec7d10-ffbc0a'.split('-').map(c => `#${c}`);
+  const coolorsLink = 'https://coolors.co/faa6ff-01fdf6-cbbaed-e9df00-03fcba';
+  const parseCoolors = (link) => {
+    return link.replace('https://coolors.co/', '').split('-').map(c => `#${c}`)
+  }
+
+  const weights = [0, 0.1, 0.6, 0.7, 1];
+  const palette = parseCoolors(coolorsLink);
   const colorMap = weights.map((w, i) => [w, palette[i]]);
 
-  const getWeightT = (weights, t, easing = t => t) => {
+  const getWeightT = (weights, t, easing) => {
     let step = 0;
     for (let i = 0; i < weights.length - 1; i += 1) {
       const w1 = weights[i];
@@ -28,18 +33,18 @@
     return lerp(t1, t2, Math.max(0, Math.min(1, easing((t - w1) / (w2 - w1)))));
   };
 
-  function makeGradient(colorMap) {
+  function makeGradient(colorMap, easing = t => t) {
     const colors = lerpColor(colorMap.map(([, c]) => c).sort(() => Math.sign(0.5 - Math.random())));
     const weights = colorMap.map(([w]) => w)
     return (t) => {
-      const wT = getWeightT(weights, t, eases.bounceInOut);
+      const wT = getWeightT(weights, t, easing);
       return colors(Math.min(1, wT));
     };
   }
 
   let stepsCount = 1100;
-
-  let gradient = makeGradient(colorMap);
+  let easing = 'bounceInOut';
+  $: gradient = makeGradient(colorMap, eases[easing]);
   let colors, colors2;
   let approxSteps = 10;
   $: {
@@ -62,7 +67,8 @@
 
   function handleKeyUp(e) {
     if (e.keyCode === 32) {
-      gradient = makeGradient(colorMap);
+      e.preventDefault();
+      gradient = makeGradient(colorMap, eases[easing]);
     }
   }
 
@@ -75,12 +81,15 @@
     font-family: Arial, Helvetica, sans-serif;
     width: 100%;
     height: 100%;
-    overflow: hidden;
     position: relative;
   }
   .gradient {
     display: flex;
-    height: 30vh;
+    height: 50vh;
+  }
+
+  input {
+    width: 300px;
   }
 
   .gradient div {
@@ -132,6 +141,10 @@
     /* opacity: 0.5; */
     /* border-radius: 0 50% 0 50%; */
   }
+
+  .ui {
+    padding: 20px;
+  }
 </style>
 <!--
 <div class="circle">
@@ -159,6 +172,18 @@
   {/each}
 </div>
 
-<input type="range" min="2" max="1000" step="1" bind:value={approxSteps} />
-<br />
-Approximation steps: {approxSteps}
+<div class="ui">
+  <input type="range" min="2" max="1000" step="1" bind:value={approxSteps} />
+  <br />
+  Approximation steps: {approxSteps}
+  <hr />
+  <input type="range" min="5" max="10000" step="1" bind:value={stepsCount} />
+  <br />
+  Gradient steps: {stepsCount}
+  <hr />
+  <select bind:value={easing}>
+  {#each Object.keys(eases) as easing}
+    <option value={easing}>{easing}</option>
+  {/each}
+  </select>
+</div>
