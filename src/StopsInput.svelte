@@ -90,12 +90,10 @@
     }
   }
 
-  function getCursor(i) {
-    if (draggingIndex === i && draggingEl) {
-      return 'grabbing';
+  function handleColorPickerEsc(e) {
+    if (e.keyCode === 27) {
+      colorPickerPos = null;
     }
-
-    return 'grab';
   }
 </script>
 
@@ -155,6 +153,7 @@
 <svelte:body
   on:mousemove={handleMouseMove}
   on:mouseup={handleMouseUp}
+  on:keyup={handleColorPickerEsc}
   />
 
 <div class="container">
