@@ -4,6 +4,7 @@
 
   export let value;
   export let palette;
+  export let availableColors;
 
   const dispatch = createEventDispatcher();
 
@@ -12,6 +13,9 @@
   let startX;
   let originalValue;
   let draggingIndex;
+  let selectedColor;
+
+  let colorPickerPos = null;
 
   function handleMouseMove(e) {
     if (draggingEl) {
@@ -19,13 +23,15 @@
       const width = container.getBoundingClientRect().width;
       const min = value[draggingIndex - 1] || 0;
       const max = value[draggingIndex + 1] || 1;
-      dispatch('input', Object.assign([...value], {
-        [draggingIndex]: between(
-          min,
-          max,
-          originalValue + (e.pageX - startX) / width
-        )
-      }));
+      dispatch('input', {
+        stops: Object.assign([...value], {
+          [draggingIndex]: between(
+            min,
+            max,
+            originalValue + (e.pageX - startX) / width
+          )
+        })
+      });
     }
   }
 
@@ -44,13 +50,25 @@
   function handleAdd(e) {
     const x = e.pageX - e.target.getBoundingClientRect().left;
     const newValue = x / container.getBoundingClientRect().width;
+    colorPickerPos = newValue;
+  }
+
+  function handleColorClick(e, color) {
     for (let i = value.length - 1; i >= 0; i -= 1) {
-      if (newValue > value[i]) {
-        dispatch('input', [
-          ...value.slice(0, i + 1),
-          newValue,
-          ...value.slice(i + 1)
-        ]);
+      if (colorPickerPos > value[i]) {
+        dispatch('input', {
+          stops: [
+            ...value.slice(0, i + 1),
+            colorPickerPos,
+            ...value.slice(i + 1)
+          ],
+          palette: [
+            ...palette.slice(0, i + 1),
+            color,
+            ...palette.slice(i + 1)
+          ]
+        });
+        colorPickerPos = null;
         break;
       }
     }
@@ -59,10 +77,16 @@
   function handleClick(e, i) {
     if (e.altKey) {
       e.preventDefault();
-      dispatch('input', [
-        ...value.slice(0, i),
-        ...value.slice(i + 1)
-      ]);
+      dispatch('input', {
+        stops: [
+          ...value.slice(0, i),
+          ...value.slice(i + 1)
+        ],
+        palette: [
+          ...palette.slice(0, i),
+          ...palette.slice(i + 1)
+        ]
+      });
     }
   }
 
@@ -110,6 +134,22 @@
     transform: translate(-50%, -50%);
     cursor: grab;
   }
+
+  .colorPicker {
+    position: absolute;
+    top: 50%;
+    width: 60px;
+    transform: translate(-50%, 0);
+    background-color: #ffffff;
+    box-shadow: rgba(0, 0, 0, 0.3) 0 0 2px;
+  }
+
+  .colorPicker div {
+    margin: 5px;
+    height: 20px;
+    cursor: pointer;
+    background-color: currentColor;
+  }
 </style>
 
 <svelte:body
@@ -128,9 +168,23 @@
           color: {palette[i]};
           z-index: {draggingIndex === i ? 2 : 1};
           cursor: {draggingIndex === i && draggingEl ? 'grabbing' : 'grab'}
-        " class="stop"></div>
+        "
+        class="stop" />
     {/each}
 
-    <div class="bar" on:click={handleAdd}></div>
+    {#if colorPickerPos !== null}
+      <div class="colorPicker" style="left: {colorPickerPos * 100}%;">
+        {#each availableColors as color}
+          <div style="color: {color}" on:click={e => handleColorClick(e, color)} />
+        {/each}
+        <div style="color: {selectedColor}" on:click={e => handleColorClick(e, selectedColor)} />
+
+        <div>
+          <input type="color" bind:value={selectedColor} />
+        </div>
+      </div>
+    {/if}
+
+    <div class="bar" on:click={handleAdd} />
   </div>
 </div>

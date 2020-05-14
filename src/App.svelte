@@ -14,6 +14,10 @@
     return link.replace('https://coolors.co/', '').split('-').map(c => `#${c}`)
   }
 
+  const availableColors = parseCoolors(
+    'https://coolors.co/4c1a57-ff3cc7-f0f600-00e5e8-007c77'
+  );
+
   let stops = [0, 0.25, 0.5, 0.75, 1];
   let palette = shuffle(parseCoolors(coolorsLink));
   let stepsCount = 500;
@@ -65,8 +69,12 @@
 <StopsInput
   value={stops}
   palette={palette}
+  availableColors={availableColors}
   on:input={e => {
-    stops = e.detail;
+    stops = e.detail.stops;
+    if (e.detail.palette) {
+      palette = e.detail.palette;
+    }
   }}
 />
 
