@@ -128,11 +128,11 @@
 
   .bar {
     position: absolute;
-    height: 4px;
-    background-color: #ccc;
+    height: 6px;
+    background-color: #EEE;
     position: absolute;
     top: 50%;
-    margin-top: -2px;
+    margin-top: -3px;
     left: 0;
     right: 0;
     cursor: cell;
@@ -141,20 +141,33 @@
   .stop {
     width: 10px;
     height: 10px;
-    border-radius: 50%;
     top: 50%;
     z-index: 1;
     background-color: currentColor;
     border: 3px solid #FFF;
-    box-shadow: rgba(0, 0, 0, 0.3) 0 0 2px;
+    box-shadow: rgba(0, 0, 0, 0.2) 0 0 1px 1px, rgba(0, 0, 0, 1) 0 0 1px inset;
     position: absolute;
-    transform: translate(-50%, -50%);
-    cursor: grab;
+    transform: translate(-50%, -50%) rotate(45deg);
   }
 
   .colorPickerDropdown {
     position: absolute;
+    z-index: 1;
     top: 50%;
+    margin-top: 10px;
+    transform: translate(-50%, 0);
+  }
+
+
+  .colorPickerDropdown::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    height: 20px;
+    bottom: 100%;
+    margin-bottom: -10px;
+    width: 1px;
+    background-color: #000000;
   }
 </style>
 

@@ -14,27 +14,25 @@
 
 <style>
   .colorPicker {
+    position: relative;
     width: 60px;
-    transform: translate(-50%, 0);
     background-color: #ffffff;
     box-shadow: rgba(0, 0, 0, 0.3) 0 0 2px;
+    padding: 10px;
   }
 
-  .colorPicker div {
-    margin: 5px;
+  .color {
     height: 20px;
     cursor: pointer;
     background-color: currentColor;
+    margin-bottom: 10px;
   }
 </style>
 
 <div class="colorPicker">
-  {#each availableColors as color}
-    <div style="color: {color}" on:click={e => handleColorClick(color)} />
+  {#each [...availableColors, selectedColor] as color}
+    <div class="color" style="color: {color}" on:click={e => handleColorClick(color)} />
   {/each}
-  <div style="color: {selectedColor}" on:click={e => handleColorClick(selectedColor)} />
 
-  <div>
-    <input type="color" bind:value={selectedColor} />
-  </div>
+  <input type="color" bind:value={selectedColor} />
 </div>
