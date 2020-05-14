@@ -1,6 +1,8 @@
 <script>
+  import ColorPicker from './ColorPicker.svelte';
+
   import { createEventDispatcher } from 'svelte/internal';
-  import { between } from './utils';
+  import { between, swap } from './utils';
 
   export let value;
   export let palette;
@@ -9,7 +11,7 @@
   const dispatch = createEventDispatcher();
 
   let container;
-  let draggingEl;
+  let dragging = false;
   let startX;
   let originalValue;
   let draggingIndex;
@@ -17,15 +19,8 @@
 
   let colorPickerPos = null;
 
-  function swap(arr, i1, i2) {
-    return Object.assign([...arr], {
-      [i1]: arr[i2],
-      [i2]: arr[i1]
-    });
-  }
-
   function handleMouseMove(e) {
-    if (draggingEl) {
+    if (dragging) {
       e.preventDefault();
       const width = container.getBoundingClientRect().width;
       const min = value[draggingIndex - 1] || 0;
@@ -35,14 +30,6 @@
         1,
         originalValue + (e.pageX - startX) / width
       );
-
-      if (newValue === min && newValue > 0) {
-        newValue -= 0.01;
-      }
-
-      if (newValue === max && newValue < 1) {
-        newValue += 0.01;
-      }
 
       const stops = Object.assign([...value], {
         [draggingIndex]: newValue
@@ -68,39 +55,45 @@
   }
 
   function handleMouseUp() {
-    draggingEl = null;
+    dragging = false;
   }
 
   function handleMouseDown(e, i) {
     e.preventDefault();
-    draggingEl = e.target;
+    dragging = true;
     draggingIndex = i;
     startX = e.pageX;
     originalValue = value[i];
   }
 
-  function handleAdd(e) {
-    const x = e.pageX - e.target.getBoundingClientRect().left;
-    const newValue = x / container.getBoundingClientRect().width;
-    colorPickerPos = newValue;
+  function openColorPickerAt(value) {
+    colorPickerPos = value;
   }
 
-  function handleColorClick(e, color) {
+  function closeColorPicker() {
+    colorPickerPos = null;
+  }
+
+  function handleAdd(e) {
+    const x = e.pageX - e.target.getBoundingClientRect().left;
+    openColorPickerAt(
+      x / container.getBoundingClientRect().width
+    );
+  }
+
+  function handleColorPick(e) {
+    const color = e.detail;
     for (let i = value.length - 1; i >= 0; i -= 1) {
       if (colorPickerPos > value[i]) {
+        const newValue = value.slice();
+        newValue.splice(i + 1, 0, colorPickerPos);
+        const newPalette = palette.slice();
+        newPalette.splice(i + 1, 0, color);
         dispatch('input', {
-          stops: [
-            ...value.slice(0, i + 1),
-            colorPickerPos,
-            ...value.slice(i + 1)
-          ],
-          palette: [
-            ...palette.slice(0, i + 1),
-            color,
-            ...palette.slice(i + 1)
-          ]
+          stops: newValue,
+          palette: newPalette,
         });
-        colorPickerPos = null;
+        closeColorPicker();
         break;
       }
     }
@@ -129,7 +122,7 @@
   function handleColorPickerEsc(e) {
     altPressed = false;
     if (e.keyCode === 27) {
-      colorPickerPos = null;
+      closeColorPicker();
     }
   }
 
@@ -137,7 +130,7 @@
     if (altPressed) {
       return 'not-allowed';
     }
-    if (draggingIndex === i && draggingEl) {
+    if (draggingIndex === i && dragging) {
       return 'grabbing';
     }
 
@@ -181,20 +174,9 @@
     cursor: grab;
   }
 
-  .colorPicker {
+  .colorPickerDropdown {
     position: absolute;
     top: 50%;
-    width: 60px;
-    transform: translate(-50%, 0);
-    background-color: #ffffff;
-    box-shadow: rgba(0, 0, 0, 0.3) 0 0 2px;
-  }
-
-  .colorPicker div {
-    margin: 5px;
-    height: 20px;
-    cursor: pointer;
-    background-color: currentColor;
   }
 </style>
 
@@ -221,15 +203,11 @@
     {/each}
 
     {#if colorPickerPos !== null}
-      <div class="colorPicker" style="left: {colorPickerPos * 100}%;">
-        {#each availableColors as color}
-          <div style="color: {color}" on:click={e => handleColorClick(e, color)} />
-        {/each}
-        <div style="color: {selectedColor}" on:click={e => handleColorClick(e, selectedColor)} />
-
-        <div>
-          <input type="color" bind:value={selectedColor} />
-        </div>
+      <div class="colorPickerDropdown" style="left: {colorPickerPos * 100}%;">
+        <ColorPicker
+          availableColors={availableColors}
+          on:pick={handleColorPick}
+          />
       </div>
     {/if}
 
