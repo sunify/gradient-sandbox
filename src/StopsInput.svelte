@@ -12,30 +12,22 @@
 
   let container;
   let dragging = false;
-  let startX;
-  let originalValue;
   let draggingIndex;
-
   let colorPickerPos = null;
 
   function handleMouseMove(e) {
     if (dragging) {
       e.preventDefault();
-      const width = container.getBoundingClientRect().width;
-      const newValue = between(
-        0,
-        1,
-        originalValue + (e.pageX - startX) / width
-      );
 
+      const newPos = between(0, 1, posFromPageX(e.pageX));
       const stops = Object.assign([...value], {
-        [draggingIndex]: newValue
+        [draggingIndex]: newPos
       }).sort((a, b) => a - b);
 
       let newIndex = draggingIndex;
-      if (newValue < value[draggingIndex - 1]) {
+      if (newPos < value[draggingIndex - 1]) {
         newIndex -= 1;
-      } else if (newValue > value[draggingIndex + 1]) {
+      } else if (newPos > value[draggingIndex + 1]) {
         newIndex += 1;
       }
 
@@ -59,8 +51,6 @@
     e.preventDefault();
     dragging = true;
     draggingIndex = i;
-    startX = e.pageX;
-    originalValue = value[i];
   }
 
   function openColorPickerAt(value) {
@@ -71,11 +61,13 @@
     colorPickerPos = null;
   }
 
+  function posFromPageX(pageX) {
+    const { width, left } = container.getBoundingClientRect();
+    return (pageX - left) / width;
+  }
+
   function handlePickerOpen(e) {
-    const x = e.pageX - e.target.getBoundingClientRect().left;
-    openColorPickerAt(
-      x / container.getBoundingClientRect().width
-    );
+    openColorPickerAt(posFromPageX(e.pageX));
   }
 
   function handleColorPick({ detail: color }) {
@@ -91,7 +83,7 @@
     }
   }
 
-  function handleClick(e, i) {
+  function handleRemove(e, i) {
     if (e.altKey) {
       e.preventDefault();
       dispatch('input', {
@@ -178,7 +170,7 @@
     {#each value as stop, i}
       <div
         on:mousedown={e => handleMouseDown(e, i)}
-        on:click={e => handleClick(e, i)}
+        on:click={e => handleRemove(e, i)}
         style="
           left: {stop * 100}%;
           color: {palette[i]};
