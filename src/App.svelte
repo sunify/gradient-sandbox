@@ -1,8 +1,8 @@
 <script>
+  import eases from 'eases';
   import StopsInput from './StopsInput.svelte';
   import Gradient from './Gradient.svelte';
   import lerpColor from '@sunify/lerp-color';
-  import eases from 'eases';
   import { makeGradient } from './make-gradient';
 
   function shuffle(arr) {
@@ -14,9 +14,9 @@
     return link.replace('https://coolors.co/', '').split('-').map(c => `#${c}`)
   }
 
-  let stops = [0.15, 0.2, 0.3, 0.71, 1];
+  let stops = [0, 0.25, 0.5, 0.75, 1];
   let palette = shuffle(parseCoolors(coolorsLink));
-  let stepsCount = 1100;
+  let stepsCount = 500;
   let easing = 'linear';
   let approxSteps = 10;
   let palette2;
@@ -50,6 +50,7 @@
 
   .gradient-wrapper {
     height: 50vh;
+    padding: 20px 40px;
   }
 
   input {
@@ -61,7 +62,13 @@
   }
 </style>
 
-<StopsInput />
+<StopsInput
+  value={stops}
+  palette={palette}
+  on:input={e => {
+    stops = e.detail;
+  }}
+/>
 
 <div class="gradient-wrapper">
   <Gradient
@@ -100,5 +107,12 @@
     type="text"
     readonly
     value={`['${palette2.join("', '")}']`}
+    />
+  <hr />
+  <input
+    style="width: 100%;"
+    type="text"
+    readonly
+    value={`linear-gradient(to right, ${palette2.join(", ")})`}
     />
 </div>

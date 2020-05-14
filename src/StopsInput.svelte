@@ -1,7 +1,11 @@
 <script>
+  import { createEventDispatcher } from 'svelte/internal';
   import { between } from './utils';
 
-  let value = [0, 0.5, 1];
+  export let value;
+  export let palette;
+
+  const dispatch = createEventDispatcher();
 
   let container;
   let draggingEl;
@@ -15,11 +19,13 @@
       const width = container.getBoundingClientRect().width;
       const min = value[draggingIndex - 1] || 0;
       const max = value[draggingIndex + 1] || 1;
-      value[draggingIndex] = between(
-        min,
-        max,
-        originalValue + (e.pageX - startX) / width
-      );
+      dispatch('input', Object.assign([...value], {
+        [draggingIndex]: between(
+          min,
+          max,
+          originalValue + (e.pageX - startX) / width
+        )
+      }));
     }
   }
 
@@ -78,7 +84,9 @@
     border-radius: 50%;
     top: 50%;
     z-index: 1;
-    background-color: #ffcc00;
+    background-color: currentColor;
+    border: 2px solid #FFF;
+    box-shadow: #666 0 0 2px;
     position: absolute;
     transform: translate(-50%, -50%);
     cursor: grab;
@@ -91,12 +99,15 @@
   />
 
 <div class="container">
-  <span style="position: absolute; top: 0;">{value.join(', ')}</span>
   <div class="stops" bind:this={container}>
     {#each value as stop, i}
       <div
         on:mousedown={e => handleMouseDown(e, i)}
-        style="left: {stop * 100}%" class="stop"></div>
+        style="
+          left: {stop * 100}%;
+          color: {palette[i]};
+          z-index: {draggingIndex === i ? 2 : 1}
+        " class="stop"></div>
     {/each}
 
     <div class="bar" on:click={handleAdd}></div>
