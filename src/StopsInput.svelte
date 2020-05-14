@@ -90,11 +90,27 @@
     }
   }
 
+  let altPressed = false;
+  function handleAltPressed(e) {
+    altPressed = e.keyCode === 18;
+  }
   function handleColorPickerEsc(e) {
+    altPressed = false;
     if (e.keyCode === 27) {
       colorPickerPos = null;
     }
   }
+
+  $: getCursor = (i) => {
+    if (altPressed) {
+      return 'not-allowed';
+    }
+    if (draggingIndex === i && draggingEl) {
+      return 'grabbing';
+    }
+
+    return 'grab';
+  };
 </script>
 
 <style>
@@ -116,7 +132,7 @@
     margin-top: -2px;
     left: 0;
     right: 0;
-    cursor: crosshair;
+    cursor: cell;
   }
 
   .stop {
@@ -154,6 +170,7 @@
   on:mousemove={handleMouseMove}
   on:mouseup={handleMouseUp}
   on:keyup={handleColorPickerEsc}
+  on:keydown={handleAltPressed}
   />
 
 <div class="container">
@@ -166,7 +183,7 @@
           left: {stop * 100}%;
           color: {palette[i]};
           z-index: {draggingIndex === i ? 2 : 1};
-          cursor: {draggingIndex === i && draggingEl ? 'grabbing' : 'grab'}
+          cursor: {getCursor(i)};
         "
         class="stop" />
     {/each}
