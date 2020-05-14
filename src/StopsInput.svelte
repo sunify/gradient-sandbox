@@ -17,21 +17,53 @@
 
   let colorPickerPos = null;
 
+  function swap(arr, i1, i2) {
+    return Object.assign([...arr], {
+      [i1]: arr[i2],
+      [i2]: arr[i1]
+    });
+  }
+
   function handleMouseMove(e) {
     if (draggingEl) {
       e.preventDefault();
       const width = container.getBoundingClientRect().width;
       const min = value[draggingIndex - 1] || 0;
       const max = value[draggingIndex + 1] || 1;
-      dispatch('input', {
-        stops: Object.assign([...value], {
-          [draggingIndex]: between(
-            min,
-            max,
-            originalValue + (e.pageX - startX) / width
-          )
-        })
-      });
+      let newValue = between(
+        0,
+        1,
+        originalValue + (e.pageX - startX) / width
+      );
+
+      if (newValue === min && newValue > 0) {
+        newValue -= 0.01;
+      }
+
+      if (newValue === max && newValue < 1) {
+        newValue += 0.01;
+      }
+
+      const stops = Object.assign([...value], {
+        [draggingIndex]: newValue
+      }).sort((a, b) => a - b);
+
+      let newIndex = draggingIndex;
+      if (newValue < min) {
+        newIndex -= 1;
+      } else if (newValue > max) {
+        newIndex += 1;
+      }
+
+      if (newIndex !== draggingIndex) {
+        dispatch('input', {
+          stops,
+          palette: swap(palette, newIndex, draggingIndex)
+        });
+        draggingIndex = newIndex;
+      } else {
+        dispatch('input', { stops });
+      }
     }
   }
 
