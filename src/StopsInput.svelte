@@ -46,14 +46,32 @@
     const newValue = x / container.getBoundingClientRect().width;
     for (let i = value.length - 1; i >= 0; i -= 1) {
       if (newValue > value[i]) {
-        value = [
+        dispatch('input', [
           ...value.slice(0, i + 1),
           newValue,
           ...value.slice(i + 1)
-        ];
+        ]);
         break;
       }
     }
+  }
+
+  function handleClick(e, i) {
+    if (e.altKey) {
+      e.preventDefault();
+      dispatch('input', [
+        ...value.slice(0, i),
+        ...value.slice(i + 1)
+      ]);
+    }
+  }
+
+  function getCursor(i) {
+    if (draggingIndex === i && draggingEl) {
+      return 'grabbing';
+    }
+
+    return 'grab';
   }
 </script>
 
@@ -76,6 +94,7 @@
     margin-top: -2px;
     left: 0;
     right: 0;
+    cursor: crosshair;
   }
 
   .stop {
@@ -85,8 +104,8 @@
     top: 50%;
     z-index: 1;
     background-color: currentColor;
-    border: 2px solid #FFF;
-    box-shadow: #666 0 0 2px;
+    border: 3px solid #FFF;
+    box-shadow: rgba(0, 0, 0, 0.3) 0 0 2px;
     position: absolute;
     transform: translate(-50%, -50%);
     cursor: grab;
@@ -103,10 +122,12 @@
     {#each value as stop, i}
       <div
         on:mousedown={e => handleMouseDown(e, i)}
+        on:click={e => handleClick(e, i)}
         style="
           left: {stop * 100}%;
           color: {palette[i]};
-          z-index: {draggingIndex === i ? 2 : 1}
+          z-index: {draggingIndex === i ? 2 : 1};
+          cursor: {draggingIndex === i && draggingEl ? 'grabbing' : 'grab'}
         " class="stop"></div>
     {/each}
 
