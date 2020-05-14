@@ -14,7 +14,6 @@
   let dragging = false;
   let draggingIndex;
   let colorPickerPos = null;
-  let colorPickerIndex = null;
 
   function handleMouseMove(e) {
     if (dragging) {
@@ -170,7 +169,7 @@
     position: absolute;
     z-index: 1;
     top: 50%;
-    margin-top: 10px;
+    margin-top: 20px;
     transform: translate(-50%, 0);
   }
 
@@ -178,10 +177,11 @@
     content: '';
     position: absolute;
     left: 50%;
-    height: 20px;
+    height: 30px;
     bottom: 100%;
     margin-bottom: -10px;
     width: 1px;
+    transform: translateX(-50%);
     background-color: #000000;
   }
 </style>
