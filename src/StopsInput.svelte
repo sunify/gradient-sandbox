@@ -54,7 +54,7 @@
   }
 
   function handleStopMouseUp(e, i) {
-    if (Date.now() - mousedownTime < 300) {
+    if (Date.now() - mousedownTime < 300 && !e.altKey) {
       colorPickerPos = value[i];
     }
   }
@@ -112,6 +112,7 @@
   function handleAltPressed(e) {
     altPressed = e.keyCode === 18;
   }
+
   function handleColorPickerEsc(e) {
     altPressed = false;
     if (e.keyCode === 27) {
