@@ -2,7 +2,7 @@
   import ColorPicker from './ColorPicker.svelte';
 
   import { createEventDispatcher } from 'svelte/internal';
-  import { between, swap } from './utils';
+  import { between, swap, insert, remove } from './utils';
 
   export let value;
   export let palette;
@@ -15,7 +15,6 @@
   let startX;
   let originalValue;
   let draggingIndex;
-  let selectedColor;
 
   let colorPickerPos = null;
 
@@ -23,9 +22,7 @@
     if (dragging) {
       e.preventDefault();
       const width = container.getBoundingClientRect().width;
-      const min = value[draggingIndex - 1] || 0;
-      const max = value[draggingIndex + 1] || 1;
-      let newValue = between(
+      const newValue = between(
         0,
         1,
         originalValue + (e.pageX - startX) / width
@@ -36,9 +33,9 @@
       }).sort((a, b) => a - b);
 
       let newIndex = draggingIndex;
-      if (newValue < min) {
+      if (newValue < value[draggingIndex - 1]) {
         newIndex -= 1;
-      } else if (newValue > max) {
+      } else if (newValue > value[draggingIndex + 1]) {
         newIndex += 1;
       }
 
@@ -74,24 +71,19 @@
     colorPickerPos = null;
   }
 
-  function handleAdd(e) {
+  function handlePickerOpen(e) {
     const x = e.pageX - e.target.getBoundingClientRect().left;
     openColorPickerAt(
       x / container.getBoundingClientRect().width
     );
   }
 
-  function handleColorPick(e) {
-    const color = e.detail;
+  function handleColorPick({ detail: color }) {
     for (let i = value.length - 1; i >= 0; i -= 1) {
       if (colorPickerPos > value[i]) {
-        const newValue = value.slice();
-        newValue.splice(i + 1, 0, colorPickerPos);
-        const newPalette = palette.slice();
-        newPalette.splice(i + 1, 0, color);
         dispatch('input', {
-          stops: newValue,
-          palette: newPalette,
+          stops: insert(value, colorPickerPos, i + 1),
+          palette: insert(palette, color, i + 1),
         });
         closeColorPicker();
         break;
@@ -103,14 +95,8 @@
     if (e.altKey) {
       e.preventDefault();
       dispatch('input', {
-        stops: [
-          ...value.slice(0, i),
-          ...value.slice(i + 1)
-        ],
-        palette: [
-          ...palette.slice(0, i),
-          ...palette.slice(i + 1)
-        ]
+        stops: remove(value, i),
+        palette: remove(palette, i)
       });
     }
   }
@@ -211,6 +197,6 @@
       </div>
     {/if}
 
-    <div class="bar" on:click={handleAdd} />
+    <div class="bar" on:click={handlePickerOpen} />
   </div>
 </div>
