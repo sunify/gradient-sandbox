@@ -1,9 +1,6 @@
 import lerpColor from '@sunify/lerp-color';
-  import lerp from 'lerp';
-
-function between(min, max, n) {
-  return Math.max(min, Math.min(max, n));
-}
+import lerp from 'lerp';
+import { between } from './utils';
 
 function getWeightT(weights, t) {
   let step = 0;
@@ -81,8 +78,8 @@ export function normalizePalette(palette, stops) {
   }
 
   if (first(stops) > 0) {
-    palette = [first(palette), ...palette];
-    stops = [0, ...stops];
+    palette.splice(0, 0, first(palette));
+    stops.splice(0, 0, 0);
   }
 
   return [palette, stops];

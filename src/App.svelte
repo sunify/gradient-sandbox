@@ -1,4 +1,5 @@
 <script>
+  import StopsInput from './StopsInput.svelte';
   import Gradient from './Gradient.svelte';
   import lerpColor from '@sunify/lerp-color';
   import eases from 'eases';
@@ -12,7 +13,6 @@
   function parseCoolors(link) {
     return link.replace('https://coolors.co/', '').split('-').map(c => `#${c}`)
   }
-
 
   let stops = [0.15, 0.2, 0.3, 0.71, 1];
   let palette = shuffle(parseCoolors(coolorsLink));
@@ -60,6 +60,8 @@
     padding: 20px;
   }
 </style>
+
+<StopsInput />
 
 <div class="gradient-wrapper">
   <Gradient
