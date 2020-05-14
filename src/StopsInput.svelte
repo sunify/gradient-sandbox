@@ -2,7 +2,7 @@
   import ColorPicker from './ColorPicker.svelte';
 
   import { createEventDispatcher } from 'svelte/internal';
-  import { between, swap, insert, remove } from './utils';
+  import { between, swap, insert, remove, set } from './utils';
 
   export let value;
   export let palette;
@@ -14,15 +14,14 @@
   let dragging = false;
   let draggingIndex;
   let colorPickerPos = null;
+  let colorPickerIndex = null;
 
   function handleMouseMove(e) {
     if (dragging) {
       e.preventDefault();
 
       const newPos = between(0, 1, posFromPageX(e.pageX));
-      const stops = Object.assign([...value], {
-        [draggingIndex]: newPos
-      }).sort((a, b) => a - b);
+      const stops = set(value, newPos, draggingIndex).sort((a, b) => a - b);
 
       let newIndex = draggingIndex;
       if (newPos < value[draggingIndex - 1]) {
@@ -47,10 +46,18 @@
     dragging = false;
   }
 
-  function handleMouseDown(e, i) {
+  let mousedownTime;
+  function handleStopMouseDown(e, i) {
     e.preventDefault();
     dragging = true;
     draggingIndex = i;
+    mousedownTime = Date.now();
+  }
+
+  function handleStopMouseUp(e, i) {
+    if (Date.now() - mousedownTime < 300) {
+      colorPickerPos = value[i];
+    }
   }
 
   function openColorPickerAt(value) {
@@ -71,19 +78,28 @@
   }
 
   function handleColorPick({ detail: color }) {
-    for (let i = value.length - 1; i >= 0; i -= 1) {
-      if (colorPickerPos > value[i]) {
-        dispatch('input', {
-          stops: insert(value, colorPickerPos, i + 1),
-          palette: insert(palette, color, i + 1),
-        });
-        closeColorPicker();
-        break;
+    if (colorPickerPos !== null) {
+      for (let i = value.length - 1; i >= 0; i -= 1) {
+        if (colorPickerPos === value[i]) {
+          dispatch('input', {
+            palette: set(palette, color, i),
+          });
+          break;
+        }
+
+        if (colorPickerPos > value[i]) {
+          dispatch('input', {
+            stops: insert(value, colorPickerPos, i + 1),
+            palette: insert(palette, color, i + 1),
+          });
+          break;
+        }
       }
+      closeColorPicker();
     }
   }
 
-  function handleRemove(e, i) {
+  function handleColorClick(e, i) {
     if (e.altKey) {
       e.preventDefault();
       dispatch('input', {
@@ -158,7 +174,6 @@
     transform: translate(-50%, 0);
   }
 
-
   .colorPickerDropdown::before {
     content: '';
     position: absolute;
@@ -182,8 +197,9 @@
   <div class="stops" bind:this={container}>
     {#each value as stop, i}
       <div
-        on:mousedown={e => handleMouseDown(e, i)}
-        on:click={e => handleRemove(e, i)}
+        on:mousedown={e => handleStopMouseDown(e, i)}
+        on:mouseup={e => handleStopMouseUp(e, i)}
+        on:click={e => handleColorClick(e, i)}
         style="
           left: {stop * 100}%;
           color: {palette[i]};

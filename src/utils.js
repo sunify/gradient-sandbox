@@ -22,3 +22,9 @@ export function remove(arr, from) {
 
   return result;
 }
+
+export function set(arr, item, at) {
+  return Object.assign([...arr], {
+    [at]: item
+  });
+}

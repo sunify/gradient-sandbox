@@ -71,7 +71,9 @@
   palette={palette}
   availableColors={availableColors}
   on:input={e => {
-    stops = e.detail.stops;
+    if (e.detail.stops) {
+      stops = e.detail.stops;
+    }
     if (e.detail.palette) {
       palette = e.detail.palette;
     }
