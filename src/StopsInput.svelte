@@ -1,7 +1,7 @@
 <script>
   import ColorPicker from './ColorPicker.svelte';
 
-  import { createEventDispatcher } from 'svelte/internal';
+  import { createEventDispatcher } from 'svelte';
   import { between, swap, insert, remove, set } from './utils';
 
   export let value;

@@ -1,5 +1,5 @@
 <script>
-  import { createEventDispatcher } from 'svelte/internal';
+  import { createEventDispatcher } from 'svelte';
 
   export let availableColors = [];
 
