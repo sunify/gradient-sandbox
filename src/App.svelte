@@ -33,14 +33,12 @@
     );
   };
 
-  function handleKeyUp(e) {
+  function handleKeyDown(e) {
     if (e.keyCode === 32) {
       e.preventDefault();
       palette = shuffle(palette);
     }
   }
-
-  document.addEventListener('keydown', handleKeyUp);
 </script>
 
 <style>
@@ -65,6 +63,8 @@
     padding: 20px;
   }
 </style>
+
+<svelte:body on:keydown={handleKeyDown} />
 
 <StopsInput
   value={stops}
