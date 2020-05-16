@@ -1,5 +1,7 @@
 {
   "scripts": {
+    "start": "rollup --config rollup.config.js -w",
+    "build": "NODE_ENV=production rollup --config rollup.config.js",
     "test": "jest"
   },
   "dependencies": {
@@ -15,6 +17,7 @@
     "@testing-library/svelte": "^3.0.0",
     "jest": "^25.4.0",
     "rollup": "^2.10.2",
+    "rollup-plugin-serve": "^1.0.1",
     "rollup-plugin-svelte": "^5.2.1",
     "rollup-plugin-terser": "^5.3.0",
     "snowpack": "^2.0.0-0",
