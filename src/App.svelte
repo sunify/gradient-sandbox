@@ -21,7 +21,7 @@
   let stops = [0, 0.25, 0.5, 0.75, 1];
   let palette = shuffle(parseCoolors(coolorsLink));
   let stepsCount = 500;
-  let easing = 'linear';
+  let easing = shuffle(Object.keys(eases))[0];
   let approxSteps = 10;
   let palette2;
 
@@ -60,11 +60,57 @@
   }
 
   .ui {
-    padding: 20px;
+    padding: 30px 40px;
+    border-bottom: 1px solid #ccc;
+  }
+
+  .inputs {
+    display: flex;
+  }
+
+  input {
+    flex: 1;
+  }
+
+  input + input {
+    margin-left: 10px;
   }
 </style>
 
 <svelte:body on:keydown={handleKeyDown} />
+
+<div class="ui">
+  <input type="range" min="2" max="1000" step="1" bind:value={approxSteps} />
+  <br />
+  Approximation steps: {approxSteps}
+  <hr />
+  <input type="range" min="5" max="10000" step="1" bind:value={stepsCount} />
+  <br />
+  Gradient steps: {stepsCount}
+  <hr />
+  <select bind:value={easing}>
+  {#each Object.keys(eases) as easing}
+    <option value={easing}>{easing}</option>
+  {/each}
+  </select>
+
+  <hr />
+
+  <div class="inputs">
+    <input
+      style="width: 100%;"
+      type="text"
+      readonly
+      value={`['${palette2.join("', '")}']`}
+      />
+    <input
+      style="width: 100%;"
+      type="text"
+      readonly
+      value={`linear-gradient(to right, ${palette2.join(", ")})`}
+      />
+  </div>
+</div>
 
 <StopsInput
   value={stops}
@@ -93,36 +139,5 @@
   <Gradient
     palette={palette2}
     stepsCount={stepsCount}
-    />
-</div>
-
-<div class="ui">
-  <input type="range" min="2" max="1000" step="1" bind:value={approxSteps} />
-  <br />
-  Approximation steps: {approxSteps}
-  <hr />
-  <input type="range" min="5" max="10000" step="1" bind:value={stepsCount} />
-  <br />
-  Gradient steps: {stepsCount}
-  <hr />
-  <select bind:value={easing}>
-  {#each Object.keys(eases) as easing}
-    <option value={easing}>{easing}</option>
-  {/each}
-  </select>
-
-  <hr />
-  <input
-    style="width: 100%;"
-    type="text"
-    readonly
-    value={`['${palette2.join("', '")}']`}
-    />
-  <hr />
-  <input
-    style="width: 100%;"
-    type="text"
-    readonly
-    value={`linear-gradient(to right, ${palette2.join(", ")})`}
     />
 </div>
